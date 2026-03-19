@@ -1,6 +1,8 @@
+@using System.Globalization
 @inject IApiClient Api
 @inject NavigationManager Nav
 @inject CurrencyState Currency
+@inject IJSRuntime JS
 
 @if (!_loaded)
 {
@@ -22,6 +24,26 @@ else
 
 @code {
     private bool _loaded;
+
+    private bool _cultureSet;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_cultureSet)
+        {
+            _cultureSet = true;
+            try
+            {
+                var browserLang = await JS.InvokeAsync<string>(
+                    "eval", "window.browserLanguage || navigator.language || 'en'");
+                var culture = new CultureInfo(browserLang);
+                CultureInfo.DefaultThreadCurrentCulture = culture;
+                CultureInfo.DefaultThreadCurrentUICulture = culture;
+                StateHasChanged();
+            }
+            catch { }
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {

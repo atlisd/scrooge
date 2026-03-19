@@ -15,4 +15,5 @@ builder.Services.AddScoped(sp =>
 builder.Services.AddScoped<IApiClient, ApiClient>();
 builder.Services.AddScoped<CurrencyState>();
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+await host.RunAsync();

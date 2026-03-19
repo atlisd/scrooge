@@ -12,7 +12,7 @@
                 }
                 <br />
                 <small class="text-muted">
-                    @Expense.PaidByName paid &middot; @Expense.Date.ToString("d MMM yyyy")
+                    @Expense.PaidByName paid &middot; @Expense.Date.ToString("d")
                     @if (Expense.SplitType != SplitType.Equal)
                     {
                         <span class="badge @BadgeClass split-badge ms-1">@BadgeText</span>
