@@ -1,7 +1,8 @@
 namespace Cover.Shared.DTOs;
 
 public record CreateExpenseRequest(
-    string Description,
+    string? Merchant,
+    string? Description,
     long Amount,
     SplitType SplitType,
     int PaidById,

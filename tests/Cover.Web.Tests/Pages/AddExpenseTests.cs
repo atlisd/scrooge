@@ -16,13 +16,14 @@ public class AddExpenseTests : TestContext
     private static readonly List<UserDto> FakeUsers = [new(1, "Alice"), new(2, "Bob")];
 
     private static readonly ExpenseDto FakeExpense = new(
-        1, "Groceries", 5000, SplitType.Equal, 1, "Alice",
+        1, "Amazon", "Groceries", 5000, SplitType.Equal, 1, "Alice",
         DateOnly.FromDateTime(DateTime.Today), DateTime.UtcNow);
 
     public AddExpenseTests()
     {
         _api = Substitute.For<IApiClient>();
         _api.GetUsersAsync().Returns(FakeUsers);
+        _api.GetMerchantsAsync(Arg.Any<string>()).Returns([]);
         Services.AddSingleton(_api);
     }
 
@@ -35,13 +36,13 @@ public class AddExpenseTests : TestContext
     }
 
     [Fact]
-    public void ErrorBox_ShowsMessage_WhenDescriptionEmpty()
+    public void ErrorBox_ShowsMessage_WhenMerchantEmpty()
     {
         var cut = RenderComponent<AddExpense>();
 
         cut.Find("button[type='submit']").Click();
 
-        Assert.Equal("Description is required.", cut.Find(".alert-danger").TextContent.Trim());
+        Assert.Equal("Merchant is required.", cut.Find(".alert-danger").TextContent.Trim());
     }
 
     [Fact]
@@ -49,8 +50,8 @@ public class AddExpenseTests : TestContext
     {
         var cut = RenderComponent<AddExpense>();
 
-        // Fill description so we pass that validation check
-        cut.Find("input.form-control").Change("Groceries");
+        // Fill merchant so we pass that validation check
+        cut.Find("input[autocomplete='off']").Input("Amazon");
         cut.Find("button[type='submit']").Click();
 
         Assert.Equal("Amount must be positive.", cut.Find(".alert-danger").TextContent.Trim());
@@ -62,7 +63,7 @@ public class AddExpenseTests : TestContext
         _api.CreateExpenseAsync(Arg.Any<CreateExpenseRequest>()).Returns(FakeExpense);
 
         var cut = RenderComponent<AddExpense>();
-        cut.Find("input.form-control").Change("Groceries");
+        cut.Find("input[autocomplete='off']").Input("Amazon");
         cut.Find("input[type='number']").Change("5000");
         cut.Find("button[type='submit']").Click();
 
@@ -76,7 +77,7 @@ public class AddExpenseTests : TestContext
         _api.CreateExpenseAsync(Arg.Any<CreateExpenseRequest>()).Returns(FakeExpense);
 
         var cut = RenderComponent<AddExpense>();
-        cut.Find("input.form-control").Change("Groceries");
+        cut.Find("input[autocomplete='off']").Input("Amazon");
         cut.Find("input[type='number']").Change("5000");
         cut.Find("button[type='submit']").Click();
 

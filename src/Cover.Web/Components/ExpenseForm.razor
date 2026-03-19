@@ -1,3 +1,5 @@
+@inject IApiClient Api
+
 @if (_users is null)
 {
     <div class="text-center py-3">
@@ -12,8 +14,25 @@ else
             <InputNumber class="form-control" @bind-Value="Model.Amount" @ref="amountInput" />
         </div>
 
+        <div class="mb-3 position-relative" @onfocusout="HideSuggestionsDelayed">
+            <label class="form-label">Merchant <span class="text-danger">*</span></label>
+            <input class="form-control" value="@Model.Merchant"
+                   @oninput="OnMerchantInput" autocomplete="off" placeholder="" />
+            @if (_showSuggestions && _suggestions.Count > 0)
+            {
+                <ul class="list-group position-absolute w-100 shadow-sm" style="z-index:1000;top:100%">
+                    @foreach (var s in _suggestions)
+                    {
+                        <li class="list-group-item list-group-item-action py-2"
+                            @onmousedown="() => SelectSuggestion(s)"
+                            @ontouchstart="() => SelectSuggestion(s)">@s</li>
+                    }
+                </ul>
+            }
+        </div>
+
         <div class="mb-3">
-            <label class="form-label">Description</label>
+            <label class="form-label">Description <span class="text-muted small">(optional)</span></label>
             <InputText class="form-control" @bind-Value="Model.Description" />
         </div>
 
@@ -72,6 +91,8 @@ else
     private List<UserDto>? _users;
     private InputNumber<long?>? amountInput;
     private bool _focused;
+    private List<string> _suggestions = [];
+    private bool _showSuggestions;
 
     protected override void OnParametersSet()
     {
@@ -87,9 +108,40 @@ else
         }
     }
 
+    private async Task OnMerchantInput(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString() ?? "";
+        Model.Merchant = value;
+        if (value.Length >= 1)
+        {
+            _suggestions = await Api.GetMerchantsAsync(value);
+            _showSuggestions = true;
+        }
+        else
+        {
+            _suggestions = [];
+            _showSuggestions = false;
+        }
+    }
+
+    private void SelectSuggestion(string s)
+    {
+        Model.Merchant = s;
+        _suggestions = [];
+        _showSuggestions = false;
+    }
+
+    private async Task HideSuggestionsDelayed()
+    {
+        await Task.Delay(150);
+        _showSuggestions = false;
+        StateHasChanged();
+    }
+
     public class ExpenseFormModel
     {
-        public string Description { get; set; } = "";
+        public string Merchant { get; set; } = "";
+        public string? Description { get; set; }
         public long? Amount { get; set; }
         public int PaidById { get; set; }
         public SplitType SplitType { get; set; } = SplitType.Equal;

@@ -2,7 +2,8 @@ namespace Cover.Shared.DTOs;
 
 public record ExpenseDto(
     int Id,
-    string Description,
+    string? Merchant,
+    string? Description,
     long Amount,
     SplitType SplitType,
     int PaidById,

@@ -16,11 +16,11 @@ public class EditExpenseTests : TestContext
     private static readonly List<UserDto> FakeUsers = [new(1, "Alice"), new(2, "Bob")];
 
     private static readonly ExpenseDto ExistingExpense = new(
-        1, "Lunch", 3000, SplitType.Equal, 1, "Alice",
+        1, "Lunch", null, 3000, SplitType.Equal, 1, "Alice",
         new DateOnly(2026, 3, 1), DateTime.UtcNow);
 
     private static readonly ExpenseDto UpdatedExpense = new(
-        1, "Lunch updated", 3000, SplitType.Equal, 1, "Alice",
+        1, "Lunch updated", null, 3000, SplitType.Equal, 1, "Alice",
         new DateOnly(2026, 3, 1), DateTime.UtcNow);
 
     public EditExpenseTests()
@@ -28,6 +28,7 @@ public class EditExpenseTests : TestContext
         _api = Substitute.For<IApiClient>();
         _api.GetUsersAsync().Returns(FakeUsers);
         _api.GetExpenseAsync(1).Returns(ExistingExpense);
+        _api.GetMerchantsAsync(Arg.Any<string>()).Returns([]);
         Services.AddSingleton(_api);
     }
 
@@ -40,15 +41,15 @@ public class EditExpenseTests : TestContext
     }
 
     [Fact]
-    public void ErrorBox_ShowsMessage_WhenDescriptionEmpty()
+    public void ErrorBox_ShowsMessage_WhenMerchantEmpty()
     {
         var cut = RenderComponent<EditExpense>(p => p.Add(e => e.Id, 1));
 
-        // Clear the description that was populated from the existing expense
-        cut.Find("input.form-control").Change("");
+        // Clear the merchant that was populated from the existing expense
+        cut.Find("input[autocomplete='off']").Input("");
         cut.Find("button[type='submit']").Click();
 
-        Assert.Equal("Description is required.", cut.Find(".alert-danger").TextContent.Trim());
+        Assert.Equal("Merchant is required.", cut.Find(".alert-danger").TextContent.Trim());
     }
 
     [Fact]
@@ -56,7 +57,7 @@ public class EditExpenseTests : TestContext
     {
         var cut = RenderComponent<EditExpense>(p => p.Add(e => e.Id, 1));
 
-        cut.Find("input.form-control").Change("Some description");
+        cut.Find("input[autocomplete='off']").Input("Lunch");
         cut.Find("input[type='number']").Change("0");
         cut.Find("button[type='submit']").Click();
 
@@ -69,7 +70,7 @@ public class EditExpenseTests : TestContext
         _api.UpdateExpenseAsync(Arg.Any<int>(), Arg.Any<UpdateExpenseRequest>()).Returns(UpdatedExpense);
 
         var cut = RenderComponent<EditExpense>(p => p.Add(e => e.Id, 1));
-        cut.Find("input.form-control").Change("Lunch updated");
+        cut.Find("input[autocomplete='off']").Input("Lunch updated");
         cut.Find("button[type='submit']").Click();
 
         var nav = Services.GetRequiredService<NavigationManager>();
@@ -82,7 +83,7 @@ public class EditExpenseTests : TestContext
         _api.UpdateExpenseAsync(Arg.Any<int>(), Arg.Any<UpdateExpenseRequest>()).Returns(UpdatedExpense);
 
         var cut = RenderComponent<EditExpense>(p => p.Add(e => e.Id, 1));
-        cut.Find("input.form-control").Change("Lunch updated");
+        cut.Find("input[autocomplete='off']").Input("Lunch updated");
         cut.Find("button[type='submit']").Click();
 
         Assert.Empty(cut.FindAll(".alert-danger"));

@@ -62,6 +62,7 @@ else
         }
         else
         {
+            _model.Merchant = expense.Merchant ?? "";
             _model.Description = expense.Description;
             _model.Amount = expense.Amount;
             _model.PaidById = expense.PaidById;
@@ -74,9 +75,9 @@ else
 
     private async Task Submit()
     {
-        if (string.IsNullOrWhiteSpace(_model.Description))
+        if (string.IsNullOrWhiteSpace(_model.Merchant))
         {
-            _error = "Description is required.";
+            _error = "Merchant is required.";
             return;
         }
         if (_model.Amount is null or <= 0)
@@ -90,7 +91,7 @@ else
         try
         {
             await Api.UpdateExpenseAsync(Id, new UpdateExpenseRequest(
-                _model.Description.Trim(), _model.Amount.Value, _model.SplitType,
+                _model.Merchant.Trim(), _model.Description?.Trim(), _model.Amount.Value, _model.SplitType,
                 _model.PaidById, _model.Date));
             Nav.NavigateTo("/");
         }

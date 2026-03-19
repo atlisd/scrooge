@@ -26,7 +26,7 @@ public class ExpenseService : IExpenseService
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(e => new ExpenseDto(
-                e.Id, e.Description, e.Amount, e.SplitType,
+                e.Id, e.Merchant, e.Description, e.Amount, e.SplitType,
                 e.PaidById, e.PaidBy.Name, e.Date, e.CreatedAt))
             .ToListAsync();
 
@@ -39,7 +39,7 @@ public class ExpenseService : IExpenseService
             .Include(e => e.PaidBy)
             .Where(e => e.Id == id)
             .Select(e => new ExpenseDto(
-                e.Id, e.Description, e.Amount, e.SplitType,
+                e.Id, e.Merchant, e.Description, e.Amount, e.SplitType,
                 e.PaidById, e.PaidBy.Name, e.Date, e.CreatedAt))
             .FirstOrDefaultAsync();
     }
@@ -51,6 +51,7 @@ public class ExpenseService : IExpenseService
 
         var expense = new Expense
         {
+            Merchant = request.Merchant,
             Description = request.Description,
             Amount = request.Amount,
             SplitType = request.SplitType,
@@ -62,7 +63,7 @@ public class ExpenseService : IExpenseService
         await _db.SaveChangesAsync();
 
         return new ExpenseDto(
-            expense.Id, expense.Description, expense.Amount, expense.SplitType,
+            expense.Id, expense.Merchant, expense.Description, expense.Amount, expense.SplitType,
             expense.PaidById, user.Name, expense.Date, expense.CreatedAt);
     }
 
@@ -75,6 +76,7 @@ public class ExpenseService : IExpenseService
         var user = await _db.Users.FindAsync(request.PaidById)
             ?? throw new KeyNotFoundException($"User {request.PaidById} not found");
 
+        expense.Merchant = request.Merchant;
         expense.Description = request.Description;
         expense.Amount = request.Amount;
         expense.SplitType = request.SplitType;
@@ -85,7 +87,7 @@ public class ExpenseService : IExpenseService
         await _db.SaveChangesAsync();
 
         return new ExpenseDto(
-            expense.Id, expense.Description, expense.Amount, expense.SplitType,
+            expense.Id, expense.Merchant, expense.Description, expense.Amount, expense.SplitType,
             expense.PaidById, user.Name, expense.Date, expense.CreatedAt);
     }
 
@@ -97,4 +99,13 @@ public class ExpenseService : IExpenseService
         _db.Expenses.Remove(expense);
         await _db.SaveChangesAsync();
     }
+
+    public async Task<List<string>> GetMerchantsAsync(string query)
+        => await _db.Expenses
+            .Where(e => e.Merchant != null && EF.Functions.ILike(e.Merchant, $"{query}%"))
+            .Select(e => e.Merchant!)
+            .Distinct()
+            .OrderBy(m => m)
+            .Take(10)
+            .ToListAsync();
 }

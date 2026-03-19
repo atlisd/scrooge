@@ -27,7 +27,8 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Expense>(entity =>
         {
             entity.ToTable(t => t.HasCheckConstraint("CK_Expense_Amount_Positive", "\"Amount\" > 0"));
-            entity.Property(e => e.Description).HasMaxLength(200).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(200);
+            entity.Property(e => e.Merchant).HasMaxLength(100);
             entity.Property(e => e.Amount).IsRequired();
             entity.Property(e => e.SplitType).HasDefaultValue(Shared.DTOs.SplitType.Equal);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");

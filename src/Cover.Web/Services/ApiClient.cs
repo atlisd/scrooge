@@ -119,6 +119,13 @@ public class ApiClient : IApiClient
         return (await response.Content.ReadFromJsonAsync<ExpenseDto>(JsonOptions))!;
     }
 
+    public async Task<List<string>> GetMerchantsAsync(string query)
+    {
+        var response = await _http.GetAsync($"api/expenses/merchants?q={Uri.EscapeDataString(query)}");
+        if (!response.IsSuccessStatusCode) return [];
+        return await response.Content.ReadFromJsonAsync<List<string>>(JsonOptions) ?? [];
+    }
+
     public async Task DeleteExpenseAsync(int id)
     {
         var response = await _http.DeleteAsync($"api/expenses/{id}");

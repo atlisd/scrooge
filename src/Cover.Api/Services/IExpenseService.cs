@@ -9,4 +9,5 @@ public interface IExpenseService
     Task<ExpenseDto> CreateAsync(CreateExpenseRequest request);
     Task<ExpenseDto> UpdateAsync(int id, UpdateExpenseRequest request);
     Task DeleteAsync(int id);
+    Task<List<string>> GetMerchantsAsync(string query);
 }

@@ -21,18 +21,22 @@ public class ExpensesController : ControllerBase
         return await _expenseService.GetAllAsync(page, pageSize, paidById);
     }
 
-    [HttpGet("{id}")]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult<ExpenseDto>> GetById(int id)
     {
         var expense = await _expenseService.GetByIdAsync(id);
         return expense is null ? NotFound() : Ok(expense);
     }
 
+    [HttpGet("merchants")]
+    public async Task<List<string>> GetMerchants([FromQuery] string q = "")
+        => await _expenseService.GetMerchantsAsync(q);
+
     [HttpPost]
     public async Task<ActionResult<ExpenseDto>> Create(CreateExpenseRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Description))
-            return BadRequest("Description is required");
+        if (string.IsNullOrWhiteSpace(request.Merchant))
+            return BadRequest("Merchant is required");
         if (request.Amount <= 0)
             return BadRequest("Amount must be positive");
 
@@ -40,18 +44,18 @@ public class ExpensesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = expense.Id }, expense);
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     public async Task<ActionResult<ExpenseDto>> Update(int id, UpdateExpenseRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Description))
-            return BadRequest("Description is required");
+        if (string.IsNullOrWhiteSpace(request.Merchant))
+            return BadRequest("Merchant is required");
         if (request.Amount <= 0)
             return BadRequest("Amount must be positive");
 
         return await _expenseService.UpdateAsync(id, request);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
         await _expenseService.DeleteAsync(id);

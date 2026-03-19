@@ -17,4 +17,5 @@ public interface IApiClient
     Task<ExpenseDto> CreateExpenseAsync(CreateExpenseRequest request);
     Task<ExpenseDto> UpdateExpenseAsync(int id, UpdateExpenseRequest request);
     Task DeleteExpenseAsync(int id);
+    Task<List<string>> GetMerchantsAsync(string query);
 }

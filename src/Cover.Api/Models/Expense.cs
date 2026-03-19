@@ -5,7 +5,8 @@ namespace Cover.Api.Models;
 public class Expense
 {
     public int Id { get; set; }
-    public required string Description { get; set; }
+    public string? Description { get; set; }
+    public string? Merchant { get; set; }
     public long Amount { get; set; }
     public int PaidById { get; set; }
     public User PaidBy { get; set; } = null!;

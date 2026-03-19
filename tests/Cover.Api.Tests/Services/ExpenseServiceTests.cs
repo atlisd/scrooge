@@ -28,8 +28,9 @@ public class ExpenseServiceTests
         var service = new ExpenseService(db);
 
         var result = await service.CreateAsync(new CreateExpenseRequest(
-            "Groceries", 10000, SplitType.Equal, 1, DateOnly.FromDateTime(DateTime.Today)));
+            "Amazon", "Groceries", 10000, SplitType.Equal, 1, DateOnly.FromDateTime(DateTime.Today)));
 
+        Assert.Equal("Amazon", result.Merchant);
         Assert.Equal("Groceries", result.Description);
         Assert.Equal(10000, result.Amount);
         Assert.Equal("Alice", result.PaidByName);
@@ -41,7 +42,7 @@ public class ExpenseServiceTests
         var db = CreateDb();
         var service = new ExpenseService(db);
         var created = await service.CreateAsync(new CreateExpenseRequest(
-            "Test", 5000, SplitType.Equal, 1, DateOnly.FromDateTime(DateTime.Today)));
+            "Test", null, 5000, SplitType.Equal, 1, DateOnly.FromDateTime(DateTime.Today)));
 
         var result = await service.GetByIdAsync(created.Id);
 
@@ -66,11 +67,12 @@ public class ExpenseServiceTests
         var db = CreateDb();
         var service = new ExpenseService(db);
         var created = await service.CreateAsync(new CreateExpenseRequest(
-            "Old", 5000, SplitType.Equal, 1, DateOnly.FromDateTime(DateTime.Today)));
+            "OldMerchant", "Old", 5000, SplitType.Equal, 1, DateOnly.FromDateTime(DateTime.Today)));
 
         var updated = await service.UpdateAsync(created.Id, new UpdateExpenseRequest(
-            "New", 7000, SplitType.FullOther, 2, DateOnly.FromDateTime(DateTime.Today)));
+            "NewMerchant", "New", 7000, SplitType.FullOther, 2, DateOnly.FromDateTime(DateTime.Today)));
 
+        Assert.Equal("NewMerchant", updated.Merchant);
         Assert.Equal("New", updated.Description);
         Assert.Equal(7000, updated.Amount);
         Assert.Equal(SplitType.FullOther, updated.SplitType);
@@ -83,7 +85,7 @@ public class ExpenseServiceTests
         var db = CreateDb();
         var service = new ExpenseService(db);
         var created = await service.CreateAsync(new CreateExpenseRequest(
-            "ToDelete", 5000, SplitType.Equal, 1, DateOnly.FromDateTime(DateTime.Today)));
+            "ToDelete", null, 5000, SplitType.Equal, 1, DateOnly.FromDateTime(DateTime.Today)));
 
         await service.DeleteAsync(created.Id);
 
@@ -99,7 +101,7 @@ public class ExpenseServiceTests
         for (int i = 0; i < 5; i++)
         {
             await service.CreateAsync(new CreateExpenseRequest(
-                $"Item {i}", 1000 * (i + 1), SplitType.Equal, 1,
+                $"Item {i}", null, 1000 * (i + 1), SplitType.Equal, 1,
                 DateOnly.FromDateTime(DateTime.Today)));
         }
 
@@ -117,13 +119,13 @@ public class ExpenseServiceTests
         var db = CreateDb();
         var service = new ExpenseService(db);
         await service.CreateAsync(new CreateExpenseRequest(
-            "Alice's", 5000, SplitType.Equal, 1, DateOnly.FromDateTime(DateTime.Today)));
+            "Alice's", null, 5000, SplitType.Equal, 1, DateOnly.FromDateTime(DateTime.Today)));
         await service.CreateAsync(new CreateExpenseRequest(
-            "Bob's", 3000, SplitType.Equal, 2, DateOnly.FromDateTime(DateTime.Today)));
+            "Bob's", null, 3000, SplitType.Equal, 2, DateOnly.FromDateTime(DateTime.Today)));
 
         var result = await service.GetAllAsync(1, 20, paidById: 1);
 
         Assert.Single(result.Items);
-        Assert.Equal("Alice's", result.Items[0].Description);
+        Assert.Equal("Alice's", result.Items[0].Merchant);
     }
 }

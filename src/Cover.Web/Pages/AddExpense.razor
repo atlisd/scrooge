@@ -1,6 +1,7 @@
 @page "/add"
 @inject IApiClient Api
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <h4 class="mb-3">Add Expense</h4>
 
@@ -21,14 +22,19 @@
     {
         _users = await Api.GetUsersAsync();
         if (_users.Count > 0)
-            _model.PaidById = _users[0].Id;
+        {
+            var stored = await JS.InvokeAsync<string?>("localStorage.getItem", "lastPaidById");
+            _model.PaidById = int.TryParse(stored, out var id) && _users.Any(u => u.Id == id)
+                ? id
+                : _users[0].Id;
+        }
     }
 
     private async Task Submit()
     {
-        if (string.IsNullOrWhiteSpace(_model.Description))
+        if (string.IsNullOrWhiteSpace(_model.Merchant))
         {
-            _error = "Description is required.";
+            _error = "Merchant is required.";
             return;
         }
         if (_model.Amount is null or <= 0)
@@ -42,8 +48,9 @@
         try
         {
             await Api.CreateExpenseAsync(new CreateExpenseRequest(
-                _model.Description.Trim(), _model.Amount.Value, _model.SplitType,
+                _model.Merchant.Trim(), _model.Description?.Trim(), _model.Amount.Value, _model.SplitType,
                 _model.PaidById, _model.Date));
+            await JS.InvokeVoidAsync("localStorage.setItem", "lastPaidById", _model.PaidById.ToString());
         }
         catch (Exception ex)
         {
