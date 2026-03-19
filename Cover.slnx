@@ -2,10 +2,8 @@
   <Folder Name="/src/">
     <Project Path="src/Cover.Api/Cover.Api.csproj" />
     <Project Path="src/Cover.Shared/Cover.Shared.csproj" />
-    <Project Path="src/Cover.Web/Cover.Web.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Cover.Api.Tests/Cover.Api.Tests.csproj" />
-    <Project Path="tests/Cover.Web.Tests/Cover.Web.Tests.csproj" />
   </Folder>
 </Solution>
