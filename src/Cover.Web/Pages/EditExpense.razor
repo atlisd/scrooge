@@ -1,6 +1,7 @@
 @page "/edit/{Id:int}"
 @inject IApiClient Api
 @inject NavigationManager Nav
+@inject CurrencyState Currency
 
 <h4 class="mb-3">Edit Expense</h4>
 
@@ -64,7 +65,7 @@ else
         {
             _model.Merchant = expense.Merchant ?? "";
             _model.Description = expense.Description;
-            _model.Amount = expense.Amount;
+            _model.Amount = Currency.ToDisplayValue(expense.Amount);
             _model.PaidById = expense.PaidById;
             _model.SplitType = expense.SplitType;
             _model.Date = expense.Date;
@@ -90,8 +91,9 @@ else
         _error = null;
         try
         {
+            var minorUnits = Currency.ToMinorUnits(_model.Amount.Value);
             await Api.UpdateExpenseAsync(Id, new UpdateExpenseRequest(
-                _model.Merchant.Trim(), _model.Description?.Trim(), _model.Amount.Value, _model.SplitType,
+                _model.Merchant.Trim(), _model.Description?.Trim(), minorUnits, _model.SplitType,
                 _model.PaidById, _model.Date));
             Nav.NavigateTo("/");
         }

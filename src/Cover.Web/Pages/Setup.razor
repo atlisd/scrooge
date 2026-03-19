@@ -26,6 +26,20 @@
                     </div>
                     <hr />
                     <div class="mb-3">
+                        <label class="form-label">Currency</label>
+                        <InputText class="form-control" @bind-Value="_model.Currency" placeholder="e.g. ISK, USD, EUR" />
+                        <div class="form-text">Cannot be changed after setup.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Decimal places</label>
+                        <InputSelect class="form-select" @bind-Value="_model.CurrencyDecimals">
+                            <option value="0">0 (e.g. ISK, JPY)</option>
+                            <option value="2">2 (e.g. USD, EUR)</option>
+                            <option value="3">3 (e.g. BHD, KWD)</option>
+                        </InputSelect>
+                    </div>
+                    <hr />
+                    <div class="mb-3">
                         <label class="form-label">Username</label>
                         <InputText class="form-control" @bind-Value="_model.Username" placeholder="Username" autocomplete="username" />
                     </div>
@@ -60,6 +74,12 @@
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(_model.Currency))
+        {
+            _error = "Currency is required.";
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(_model.Username))
         {
             _error = "Username is required.";
@@ -70,7 +90,10 @@
         _error = null;
         try
         {
-            await Api.SetupAsync(new SetupRequest(_model.Name1.Trim(), _model.Name2.Trim(), _model.Username.Trim(), _model.Password));
+            await Api.SetupAsync(new SetupRequest(
+                _model.Name1.Trim(), _model.Name2.Trim(),
+                _model.Username.Trim(), _model.Password,
+                _model.Currency.Trim(), _model.CurrencyDecimals));
             Nav.NavigateTo("/login");
         }
         catch (Exception ex)
@@ -87,6 +110,8 @@
     {
         public string Name1 { get; set; } = "";
         public string Name2 { get; set; } = "";
+        public string Currency { get; set; } = "";
+        public int CurrencyDecimals { get; set; }
         public string Username { get; set; } = "";
         public string Password { get; set; } = "";
     }

@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<AppCredentials>(entity =>
         {
             entity.Property(c => c.Username).HasMaxLength(100).IsRequired();
+            entity.Property(c => c.CurrencyCode).HasMaxLength(10).HasDefaultValue("ISK");
         });
 
         modelBuilder.Entity<User>(entity =>

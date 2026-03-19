@@ -1,4 +1,5 @@
 @inject IApiClient Api
+@inject CurrencyState Currency
 
 @if (_users is null)
 {
@@ -10,7 +11,7 @@ else
 {
     <EditForm FormName="expense" Model="Model" OnValidSubmit="OnSubmit">
         <div class="mb-3">
-            <label class="form-label">Amount (ISK)</label>
+            <label class="form-label">Amount (@Currency.Code)</label>
             <InputNumber class="form-control" @bind-Value="Model.Amount" @ref="amountInput" />
         </div>
 
@@ -89,7 +90,7 @@ else
     [Parameter, EditorRequired] public List<UserDto>? Users { get; set; }
 
     private List<UserDto>? _users;
-    private InputNumber<long?>? amountInput;
+    private InputNumber<decimal?>? amountInput;
     private bool _focused;
     private List<string> _suggestions = [];
     private bool _showSuggestions;
@@ -142,7 +143,7 @@ else
     {
         public string Merchant { get; set; } = "";
         public string? Description { get; set; }
-        public long? Amount { get; set; }
+        public decimal? Amount { get; set; }
         public int PaidById { get; set; }
         public SplitType SplitType { get; set; } = SplitType.Equal;
         public DateOnly Date { get; set; } = DateOnly.FromDateTime(DateTime.Today);

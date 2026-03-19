@@ -13,5 +13,6 @@ builder.Services.AddScoped(sp =>
         BaseAddress = new Uri(builder.HostEnvironment.BaseAddress)
     });
 builder.Services.AddScoped<IApiClient, ApiClient>();
+builder.Services.AddScoped<CurrencyState>();
 
 await builder.Build().RunAsync();

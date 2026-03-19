@@ -30,6 +30,7 @@ public class EditExpenseTests : TestContext
         _api.GetExpenseAsync(1).Returns(ExistingExpense);
         _api.GetMerchantsAsync(Arg.Any<string>()).Returns([]);
         Services.AddSingleton(_api);
+        Services.AddScoped<CurrencyState>();
     }
 
     [Fact]

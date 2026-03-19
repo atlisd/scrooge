@@ -1,5 +1,6 @@
 @inject IApiClient Api
 @inject NavigationManager Nav
+@inject CurrencyState Currency
 
 @if (!_loaded)
 {
@@ -27,6 +28,8 @@ else
         try
         {
             var status = await Api.GetSetupStatusAsync();
+            Currency.Code = status.CurrencyCode;
+            Currency.Decimals = status.CurrencyDecimals;
 
             if (!status.IsComplete)
             {

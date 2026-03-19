@@ -1,3 +1,5 @@
+@inject CurrencyState Currency
+
 @if (Balance is not null)
 {
     <div class="card mb-3 balance-card @(Balance.OwedAmount == 0 ? "settled" : "owes")">
@@ -13,7 +15,7 @@
                 <h5 class="card-title mb-0">
                     <span class="text-danger">@owerName</span> owes
                     <span class="text-success">@owedName</span>
-                    <strong>@FormatIsk(Balance.OwedAmount)</strong>
+                    <strong>@Currency.Format(Balance.OwedAmount)</strong>
                 </h5>
             }
         </div>
@@ -22,9 +24,4 @@
 
 @code {
     [Parameter] public BalanceDto? Balance { get; set; }
-
-    private static string FormatIsk(long amount)
-    {
-        return amount.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("is-IS")) + " kr.";
-    }
 }

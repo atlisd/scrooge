@@ -6,6 +6,7 @@ using Cover.Shared.DTOs;
 using Cover.Web.Pages;
 using Cover.Web.Services;
 using Xunit;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Cover.Web.Tests.Pages;
 
@@ -25,6 +26,7 @@ public class AddExpenseTests : TestContext
         _api.GetUsersAsync().Returns(FakeUsers);
         _api.GetMerchantsAsync(Arg.Any<string>()).Returns([]);
         Services.AddSingleton(_api);
+        Services.AddScoped<CurrencyState>();
         JSInterop.Setup<string?>("localStorage.getItem", "lastPaidById").SetResult(null);
         JSInterop.SetupVoid("localStorage.setItem", _ => true);
     }

@@ -2,6 +2,7 @@
 @inject IApiClient Api
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject CurrencyState Currency
 
 <h4 class="mb-3">Add Expense</h4>
 
@@ -47,8 +48,9 @@
         _error = null;
         try
         {
+            var minorUnits = Currency.ToMinorUnits(_model.Amount.Value);
             await Api.CreateExpenseAsync(new CreateExpenseRequest(
-                _model.Merchant.Trim(), _model.Description?.Trim(), _model.Amount.Value, _model.SplitType,
+                _model.Merchant.Trim(), _model.Description?.Trim(), minorUnits, _model.SplitType,
                 _model.PaidById, _model.Date));
             await JS.InvokeVoidAsync("localStorage.setItem", "lastPaidById", _model.PaidById.ToString());
         }

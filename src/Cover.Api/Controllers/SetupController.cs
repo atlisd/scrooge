@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Cover.Api.Data;
 using Cover.Api.Models;
 using Cover.Api.Services;
@@ -23,7 +24,11 @@ public class SetupController : ControllerBase
     public async Task<SetupStatusDto> GetStatus()
     {
         var isComplete = await _userService.IsSetupCompleteAsync();
-        return new SetupStatusDto(isComplete);
+        var creds = await _db.AppCredentials.FirstOrDefaultAsync();
+        return new SetupStatusDto(
+            isComplete,
+            creds?.CurrencyCode ?? "ISK",
+            creds?.CurrencyDecimals ?? 0);
     }
 
     [HttpPost]
@@ -41,12 +46,20 @@ public class SetupController : ControllerBase
         if (!AuthController.IsValidPassword(request.Password))
             return BadRequest("Password must be at least 12 characters and contain uppercase, lowercase, digit, and symbol.");
 
+        if (string.IsNullOrWhiteSpace(request.Currency))
+            return BadRequest("Currency is required");
+
+        if (request.CurrencyDecimals < 0 || request.CurrencyDecimals > 3)
+            return BadRequest("Decimal places must be between 0 and 3");
+
         var users = await _userService.CreateUsersAsync(request.Name1.Trim(), request.Name2.Trim());
 
         var creds = new AppCredentials
         {
             Username = request.Username.Trim(),
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password)
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            CurrencyCode = request.Currency.Trim(),
+            CurrencyDecimals = request.CurrencyDecimals
         };
         _db.AppCredentials.Add(creds);
         await _db.SaveChangesAsync();
