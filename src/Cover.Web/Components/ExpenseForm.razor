@@ -12,7 +12,10 @@ else
     <EditForm FormName="expense" Model="Model" OnValidSubmit="OnSubmit">
         <div class="mb-3">
             <label class="form-label">Amount (@Currency.Code)</label>
-            <InputNumber class="form-control" @bind-Value="Model.Amount" @ref="amountInput" />
+            <input type="number" class="form-control" @ref="_amountRef"
+                   value="@Model.Amount"
+                   step="@(Currency.Decimals == 0 ? "1" : Math.Pow(10, -Currency.Decimals).ToString("G", System.Globalization.CultureInfo.InvariantCulture))"
+                   @onchange="OnAmountChange" />
         </div>
 
         <div class="mb-3 position-relative" @onfocusout="HideSuggestionsDelayed">
@@ -90,7 +93,7 @@ else
     [Parameter, EditorRequired] public List<UserDto>? Users { get; set; }
 
     private List<UserDto>? _users;
-    private InputNumber<decimal?>? amountInput;
+    private ElementReference _amountRef;
     private bool _focused;
     private List<string> _suggestions = [];
     private bool _showSuggestions;
@@ -102,11 +105,20 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!_focused && amountInput?.Element is not null)
+        if (!_focused && _users is not null)
         {
             _focused = true;
-            await amountInput.Element.Value.FocusAsync();
+            await _amountRef.FocusAsync();
         }
+    }
+
+    private void OnAmountChange(ChangeEventArgs e)
+    {
+        if (decimal.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out var val))
+            Model.Amount = val;
+        else
+            Model.Amount = null;
     }
 
     private async Task OnMerchantInput(ChangeEventArgs e)

@@ -2,7 +2,6 @@
 @inject IApiClient Api
 @inject NavigationManager Nav
 @inject CurrencyState Currency
-@inject IJSRuntime JS
 
 @if (!_loaded)
 {
@@ -25,33 +24,18 @@ else
 @code {
     private bool _loaded;
 
-    private bool _cultureSet;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && !_cultureSet)
-        {
-            _cultureSet = true;
-            try
-            {
-                var browserLang = await JS.InvokeAsync<string>(
-                    "eval", "window.browserLanguage || navigator.language || 'en'");
-                var culture = new CultureInfo(browserLang);
-                CultureInfo.DefaultThreadCurrentCulture = culture;
-                CultureInfo.DefaultThreadCurrentUICulture = culture;
-                StateHasChanged();
-            }
-            catch { }
-        }
-    }
-
     protected override async Task OnInitializedAsync()
     {
         try
         {
             var status = await Api.GetSetupStatusAsync();
-            Currency.Code = status.CurrencyCode;
-            Currency.Decimals = status.CurrencyDecimals;
+            Currency.SetCurrency(status.CurrencyCode, status.CurrencyDecimals);
+
+            if (Currency.Culture is not null)
+            {
+                CultureInfo.DefaultThreadCurrentCulture = Currency.Culture;
+                CultureInfo.DefaultThreadCurrentUICulture = Currency.Culture;
+            }
 
             if (!status.IsComplete)
             {
