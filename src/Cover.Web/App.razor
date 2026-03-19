@@ -26,20 +26,29 @@ else
     {
         try
         {
+            await Api.InitializeAsync();
             var status = await Api.GetSetupStatusAsync();
-            _loaded = true;
 
             if (!status.IsComplete)
             {
+                _loaded = true;
                 Nav.NavigateTo("/setup");
+                return;
             }
-            else
+
+            var isAuth = await Api.GetAuthStatusAsync();
+            _loaded = true;
+
+            if (!isAuth)
             {
-                var uri = Nav.Uri;
-                if (uri.Contains("/setup"))
-                {
-                    Nav.NavigateTo("/");
-                }
+                Nav.NavigateTo("/login");
+                return;
+            }
+
+            var uri = Nav.Uri;
+            if (uri.Contains("/setup") || uri.Contains("/login"))
+            {
+                Nav.NavigateTo("/");
             }
         }
         catch

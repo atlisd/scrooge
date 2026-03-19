@@ -37,5 +37,26 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapOpenApi();
 app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Cover API"));
 app.UseCors();
+
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value ?? "";
+    bool isPublic = path.StartsWith("/api/auth/login", StringComparison.OrdinalIgnoreCase)
+                 || path.StartsWith("/api/setup", StringComparison.OrdinalIgnoreCase)
+                 || !path.StartsWith("/api", StringComparison.OrdinalIgnoreCase);
+    if (!isPublic)
+    {
+        var token = context.Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "");
+        var db = context.RequestServices.GetRequiredService<AppDbContext>();
+        var creds = await db.AppCredentials.FirstOrDefaultAsync();
+        if (token is null || creds?.SessionToken != token)
+        {
+            context.Response.StatusCode = 401;
+            return;
+        }
+    }
+    await next();
+});
+
 app.MapControllers();
 app.Run();

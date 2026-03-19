@@ -1,4 +1,5 @@
 @page "/setup"
+@layout EmptyLayout
 @inject IApiClient Api
 @inject NavigationManager Nav
 
@@ -22,6 +23,16 @@
                     <div class="mb-3">
                         <label class="form-label">Person 2</label>
                         <InputText class="form-control" @bind-Value="_model.Name2" placeholder="Name" />
+                    </div>
+                    <hr />
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <InputText class="form-control" @bind-Value="_model.Username" placeholder="Username" autocomplete="username" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <InputText type="password" class="form-control" @bind-Value="_model.Password" placeholder="Password" autocomplete="new-password" />
+                        <div class="form-text">Min 12 characters with uppercase, lowercase, digit, and symbol.</div>
                     </div>
                     <button type="submit" class="btn btn-primary w-100" disabled="@_submitting">
                         @if (_submitting)
@@ -49,12 +60,18 @@
             return;
         }
 
+        if (string.IsNullOrWhiteSpace(_model.Username))
+        {
+            _error = "Username is required.";
+            return;
+        }
+
         _submitting = true;
         _error = null;
         try
         {
-            await Api.SetupAsync(new SetupRequest(_model.Name1.Trim(), _model.Name2.Trim()));
-            Nav.NavigateTo("/", forceLoad: true);
+            await Api.SetupAsync(new SetupRequest(_model.Name1.Trim(), _model.Name2.Trim(), _model.Username.Trim(), _model.Password));
+            Nav.NavigateTo("/login");
         }
         catch (Exception ex)
         {
@@ -70,5 +87,7 @@
     {
         public string Name1 { get; set; } = "";
         public string Name2 { get; set; } = "";
+        public string Username { get; set; } = "";
+        public string Password { get; set; } = "";
     }
 }

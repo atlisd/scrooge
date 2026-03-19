@@ -9,9 +9,15 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<Expense> Expenses => Set<Expense>();
+    public DbSet<AppCredentials> AppCredentials => Set<AppCredentials>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<AppCredentials>(entity =>
+        {
+            entity.Property(c => c.Username).HasMaxLength(100).IsRequired();
+        });
+
         modelBuilder.Entity<User>(entity =>
         {
             entity.Property(u => u.Name).HasMaxLength(100).IsRequired();
