@@ -71,23 +71,6 @@ public class BalanceServiceTests
     }
 
     [Fact]
-    public async Task NotShared_NoEffectOnBalance()
-    {
-        var db = CreateDb();
-        db.Expenses.Add(new Expense
-        {
-            Description = "Personal", Amount = 3000, PaidById = 1,
-            SplitType = SplitType.NotShared, Date = DateOnly.FromDateTime(DateTime.Today)
-        });
-        db.SaveChanges();
-        var service = new BalanceService(db);
-
-        var result = await service.GetBalanceAsync();
-
-        Assert.Equal(0, result!.OwedAmount);
-    }
-
-    [Fact]
     public async Task BothSides_NetBalance()
     {
         var db = CreateDb();
@@ -127,11 +110,6 @@ public class BalanceServiceTests
             {
                 Description = "Bob's thing", Amount = 8000, PaidById = 1,
                 SplitType = SplitType.FullOther, Date = DateOnly.FromDateTime(DateTime.Today)
-            },
-            new Expense
-            {
-                Description = "Personal", Amount = 3000, PaidById = 1,
-                SplitType = SplitType.NotShared, Date = DateOnly.FromDateTime(DateTime.Today)
             });
         db.SaveChanges();
         var service = new BalanceService(db);

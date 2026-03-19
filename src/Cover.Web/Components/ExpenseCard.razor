@@ -27,14 +27,12 @@
     private string BadgeClass => Expense.SplitType switch
     {
         SplitType.FullOther => "bg-warning text-dark",
-        SplitType.NotShared => "bg-secondary",
         _ => ""
     };
 
     private string BadgeText => Expense.SplitType switch
     {
         SplitType.FullOther => "100% other",
-        SplitType.NotShared => "personal",
         _ => ""
     };
 
