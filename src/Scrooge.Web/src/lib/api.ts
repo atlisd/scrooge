@@ -70,7 +70,11 @@ export async function logout(): Promise<void> {
 			credentials: 'include'
 		});
 	} finally {
+		const activeUserId = localStorage.getItem('activeUserId');
+		const users = localStorage.getItem('users');
 		localStorage.clear();
+		if (activeUserId) localStorage.setItem('activeUserId', activeUserId);
+		if (users) localStorage.setItem('users', users);
 		window.location.href = '/login';
 	}
 }

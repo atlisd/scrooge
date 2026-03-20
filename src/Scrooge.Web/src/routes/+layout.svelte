@@ -2,8 +2,9 @@
 	import { onMount, type Snippet } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { getSetupStatus, getAuthStatus } from '$lib/api';
+	import { getSetupStatus, getAuthStatus, getUsers } from '$lib/api';
 	import { setCurrency } from '$lib/currency';
+	import { initUsers } from '$lib/user';
 	import '../app.css';
 
 	let { children }: { children: Snippet } = $props();
@@ -26,6 +27,9 @@
 				await goto('/login');
 				return;
 			}
+
+			const users = await getUsers();
+			initUsers(users);
 
 			const path = $page.url.pathname;
 			if (path === '/setup' || path === '/login') {
