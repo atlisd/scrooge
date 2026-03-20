@@ -86,6 +86,7 @@
 		buttonText="Add Expense"
 		{submitting}
 		{error}
+		showDescription={false}
 		onSubmit={handleSubmit}
 	/>
 {/if}

@@ -18,6 +18,7 @@
 		buttonText = 'Save',
 		submitting = false,
 		error = null,
+		showDescription = true,
 		onSubmit
 	}: {
 		model: ExpenseFormModel;
@@ -25,6 +26,7 @@
 		buttonText?: string;
 		submitting?: boolean;
 		error?: string | null;
+		showDescription?: boolean;
 		onSubmit: () => void;
 	} = $props();
 
@@ -122,6 +124,7 @@
 			onblur={onMerchantBlur}
 			onfocus={onMerchantFocus}
 			autocomplete="off"
+			autocapitalize="sentences"
 		/>
 		{#if showMerchants}
 			<div class="autocomplete-dropdown">
@@ -140,16 +143,19 @@
 		{/if}
 	</div>
 
-	<div class="mb-3">
-		<label for="description" class="form-label">Description</label>
-		<input
-			id="description"
-			type="text"
-			class="form-control"
-			maxlength="500"
-			bind:value={model.description}
-		/>
-	</div>
+	{#if showDescription}
+		<div class="mb-3">
+			<label for="description" class="form-label">Description</label>
+			<input
+				id="description"
+				type="text"
+				class="form-control"
+				maxlength="500"
+				bind:value={model.description}
+				autocapitalize="sentences"
+			/>
+		</div>
+	{/if}
 
 	<div class="mb-3">
 		<label for="paidBy" class="form-label">Paid by</label>
