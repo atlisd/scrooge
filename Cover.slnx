@@ -1,9 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/Cover.Api/Cover.Api.csproj" />
-    <Project Path="src/Cover.Shared/Cover.Shared.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/Cover.Api.Tests/Cover.Api.Tests.csproj" />
-  </Folder>
-</Solution>

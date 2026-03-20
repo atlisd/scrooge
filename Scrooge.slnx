@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Scrooge.Api/Scrooge.Api.csproj" />
+    <Project Path="src/Scrooge.Shared/Scrooge.Shared.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Scrooge.Api.Tests/Scrooge.Api.Tests.csproj" />
+  </Folder>
+</Solution>
