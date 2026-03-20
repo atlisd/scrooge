@@ -97,6 +97,7 @@
 			type="text"
 			inputmode="decimal"
 			class="form-control"
+			maxlength="20"
 			bind:value={model.amount}
 			use:autofocus
 			required
@@ -109,6 +110,7 @@
 			id="merchant"
 			type="text"
 			class="form-control"
+			maxlength="200"
 			bind:value={model.merchant}
 			oninput={onMerchantInput}
 			onblur={onMerchantBlur}
@@ -138,6 +140,7 @@
 			id="description"
 			type="text"
 			class="form-control"
+			maxlength="500"
 			bind:value={model.description}
 		/>
 	</div>

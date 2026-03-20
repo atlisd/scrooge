@@ -64,11 +64,15 @@ export async function login(req: LoginRequest): Promise<Response> {
 }
 
 export async function logout(): Promise<void> {
-	await fetch('/api/auth/logout', {
-		method: 'POST',
-		credentials: 'include'
-	});
-	window.location.href = '/login';
+	try {
+		await fetch('/api/auth/logout', {
+			method: 'POST',
+			credentials: 'include'
+		});
+	} finally {
+		localStorage.clear();
+		window.location.href = '/login';
+	}
 }
 
 export async function getAuthStatus(): Promise<boolean> {
