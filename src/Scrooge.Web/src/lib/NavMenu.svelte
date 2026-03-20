@@ -28,6 +28,9 @@
 				<li class="nav-item">
 					<a class="nav-link" class:active={pathname === '/history'} href="/history">History</a>
 				</li>
+				<li class="nav-item">
+					<a class="nav-link" class:active={pathname === '/about'} href="/about">About</a>
+				</li>
 			</ul>
 			<button class="btn btn-outline-light btn-sm" onclick={logout}>Logout</button>
 		</div>
