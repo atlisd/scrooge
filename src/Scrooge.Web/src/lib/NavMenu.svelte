@@ -1,7 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { logout } from '$lib/api';
-
 	let collapsed = $state(true);
 
 	function toggle() {
@@ -32,7 +30,6 @@
 					<a class="nav-link" class:active={pathname === '/about'} href="/about">About</a>
 				</li>
 			</ul>
-			<button class="btn btn-outline-light btn-sm" onclick={logout}>Logout</button>
 		</div>
 	</div>
 </nav>
