@@ -20,6 +20,12 @@ const currencyLocaleMap: Record<string, string> = {
 	JPY: 'ja-JP'
 };
 
+const groupingSeparatorMap: Record<string, string> = {
+	'is-IS': '.', 'da-DK': '.', 'nb-NO': ' ', 'sv-SE': ' ',
+	'de-DE': '.', 'en-GB': ',', 'en-US': ',', 'en-CA': ',',
+	'en-AU': ',', 'de-CH': "'", 'ja-JP': ','
+};
+
 export function setCurrency(code: string, decimals: number) {
 	_code = code;
 	_decimals = decimals;
@@ -37,16 +43,25 @@ export function getCurrencyDecimals(): number {
 
 export function formatAmount(minorUnits: number): string {
 	const locale = currencyLocaleMap[_code] || 'en-US';
+	const groupSep = groupingSeparatorMap[locale] || ',';
+	const decSep = getDecimalSeparator();
 	const divisor = Math.pow(10, _decimals);
-	const value = minorUnits / divisor;
 
-	const formatted = new Intl.NumberFormat(locale, {
-		minimumFractionDigits: _decimals,
-		maximumFractionDigits: _decimals,
-		useGrouping: true
-	}).format(value);
+	const negative = minorUnits < 0;
+	const abs = Math.abs(minorUnits);
+	const intPart = Math.floor(abs / divisor);
+	const decPart = abs % divisor;
 
-	return `${formatted} ${_code}`;
+	const intStr = intPart.toString().replace(/\B(?=(\d{3})+(?!\d))/g, groupSep);
+
+	let result: string;
+	if (_decimals === 0) {
+		result = intStr;
+	} else {
+		result = intStr + decSep + decPart.toString().padStart(_decimals, '0');
+	}
+
+	return `${negative ? '-' : ''}${result} ${_code}`;
 }
 
 export function formatDate(dateStr: string): string {
