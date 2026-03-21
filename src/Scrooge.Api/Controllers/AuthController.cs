@@ -40,10 +40,13 @@ public class AuthController : ControllerBase
 
         creds.FailedAttempts = 0;
         creds.LockoutEnd = null;
-        creds.SessionToken = GenerateToken();
         await _db.SaveChangesAsync();
 
-        SetSessionCookie(creds.SessionToken);
+        var session = new Scrooge.Api.Models.AppSession { Token = GenerateToken() };
+        _db.AppSessions.Add(session);
+        await _db.SaveChangesAsync();
+
+        SetSessionCookie(session.Token);
         return Ok();
     }
 
@@ -51,11 +54,14 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         var token = Request.Cookies["session_token"];
-        var creds = await _db.AppCredentials.FirstOrDefaultAsync();
-        if (creds is not null && creds.SessionToken == token)
+        if (token is not null)
         {
-            creds.SessionToken = null;
-            await _db.SaveChangesAsync();
+            var session = await _db.AppSessions.FirstOrDefaultAsync(s => s.Token == token);
+            if (session is not null)
+            {
+                _db.AppSessions.Remove(session);
+                await _db.SaveChangesAsync();
+            }
         }
         DeleteSessionCookie();
         return Ok();
@@ -65,8 +71,7 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Status()
     {
         var token = Request.Cookies["session_token"];
-        var creds = await _db.AppCredentials.FirstOrDefaultAsync();
-        if (token is null || creds?.SessionToken != token)
+        if (token is null || !await _db.AppSessions.AnyAsync(s => s.Token == token))
             return Unauthorized();
         return Ok();
     }

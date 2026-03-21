@@ -80,8 +80,7 @@ app.Use(async (context, next) =>
     {
         var token = context.Request.Cookies["session_token"];
         var db = context.RequestServices.GetRequiredService<AppDbContext>();
-        var creds = await db.AppCredentials.FirstOrDefaultAsync();
-        if (token is null || creds?.SessionToken != token)
+        if (token is null || !await db.AppSessions.AnyAsync(s => s.Token == token))
         {
             context.Response.StatusCode = 401;
             return;

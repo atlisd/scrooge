@@ -10,6 +10,7 @@ public class AppDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<AppCredentials> AppCredentials => Set<AppCredentials>();
+    public DbSet<AppSession> AppSessions => Set<AppSession>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -17,6 +18,13 @@ public class AppDbContext : DbContext
         {
             entity.Property(c => c.Username).HasMaxLength(100).IsRequired();
             entity.Property(c => c.CurrencyCode).HasMaxLength(10).HasDefaultValue("ISK");
+        });
+
+        modelBuilder.Entity<AppSession>(entity =>
+        {
+            entity.Property(s => s.Token).HasMaxLength(100).IsRequired();
+            entity.HasIndex(s => s.Token).IsUnique();
+            entity.Property(s => s.CreatedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<User>(entity =>
