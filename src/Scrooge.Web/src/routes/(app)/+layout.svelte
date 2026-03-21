@@ -1,8 +1,12 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { onMount, onDestroy, type Snippet } from 'svelte';
 	import NavMenu from '$lib/NavMenu.svelte';
+	import { startHub, stopHub } from '$lib/hub.svelte';
 
 	let { children }: { children: Snippet } = $props();
+
+	onMount(() => startHub());
+	onDestroy(() => stopHub());
 </script>
 
 <div class="d-flex flex-column min-vh-100">

@@ -2,6 +2,7 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Scrooge.Api.Data;
+using Scrooge.Api.Hubs;
 using Scrooge.Api.Middleware;
 using Scrooge.Api.Services;
 
@@ -17,6 +18,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddSignalR();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IBalanceService, BalanceService>();
@@ -90,4 +92,5 @@ app.Use(async (context, next) =>
 });
 
 app.MapControllers();
+app.MapHub<ExpenseHub>("/hubs/expenses");
 app.Run();

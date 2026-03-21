@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { getBalance, getExpenses } from '$lib/api';
+	import { hub } from '$lib/hub.svelte';
 	import type { BalanceDto, ExpenseDto } from '$lib/types';
 	import BalanceSummary from '$lib/BalanceSummary.svelte';
 	import ExpenseCard from '$lib/ExpenseCard.svelte';
@@ -9,13 +10,24 @@
 	let expenses = $state<ExpenseDto[]>([]);
 	let totalCount = $state(0);
 	let loading = $state(true);
+	let inited = false;
 
-	onMount(async () => {
+	async function loadData() {
 		const [b, e] = await Promise.all([getBalance(), getExpenses(1, 5)]);
 		balance = b;
 		expenses = e.items;
 		totalCount = e.totalCount;
+	}
+
+	onMount(async () => {
+		await loadData();
 		loading = false;
+		inited = true;
+	});
+
+	$effect(() => {
+		hub.expenseRevision;
+		if (inited) loadData();
 	});
 </script>
 

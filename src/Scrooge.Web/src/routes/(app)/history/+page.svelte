@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { getUsers, getExpenses } from '$lib/api';
+	import { hub } from '$lib/hub.svelte';
 	import type { UserDto, ExpenseDto } from '$lib/types';
 	import ExpenseCard from '$lib/ExpenseCard.svelte';
 
@@ -10,6 +11,7 @@
 	let currentPage = $state(1);
 	let loading = $state(true);
 	let filterUserId = $state<number | undefined>(undefined);
+	let inited = false;
 
 	const pageSize = 20;
 
@@ -18,6 +20,12 @@
 	onMount(async () => {
 		users = await getUsers();
 		await loadExpenses();
+		inited = true;
+	});
+
+	$effect(() => {
+		hub.expenseRevision;
+		if (inited) loadExpenses();
 	});
 
 	async function loadExpenses() {

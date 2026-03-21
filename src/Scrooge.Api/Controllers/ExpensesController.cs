@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Scrooge.Api.Hubs;
 using Scrooge.Api.Services;
 using Scrooge.Shared.DTOs;
 
@@ -9,8 +11,13 @@ namespace Scrooge.Api.Controllers;
 public class ExpensesController : ControllerBase
 {
     private readonly IExpenseService _expenseService;
+    private readonly IHubContext<ExpenseHub> _hub;
 
-    public ExpensesController(IExpenseService expenseService) => _expenseService = expenseService;
+    public ExpensesController(IExpenseService expenseService, IHubContext<ExpenseHub> hub)
+    {
+        _expenseService = expenseService;
+        _hub = hub;
+    }
 
     [HttpGet]
     public async Task<PagedResult<ExpenseDto>> GetAll(
@@ -43,6 +50,7 @@ public class ExpensesController : ControllerBase
             return BadRequest("Amount must be positive");
 
         var expense = await _expenseService.CreateAsync(request);
+        await _hub.Clients.All.SendAsync("ExpenseChanged");
         return CreatedAtAction(nameof(GetById), new { id = expense.Id }, expense);
     }
 
@@ -54,13 +62,16 @@ public class ExpensesController : ControllerBase
         if (request.Amount <= 0)
             return BadRequest("Amount must be positive");
 
-        return await _expenseService.UpdateAsync(id, request);
+        var result = await _expenseService.UpdateAsync(id, request);
+        await _hub.Clients.All.SendAsync("ExpenseChanged");
+        return result;
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
         await _expenseService.DeleteAsync(id);
+        await _hub.Clients.All.SendAsync("ExpenseChanged");
         return NoContent();
     }
 }

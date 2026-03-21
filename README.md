@@ -153,7 +153,14 @@ The app is designed to run behind a reverse proxy that handles SSL termination. 
 1. In Nginx Proxy Manager, add a new **Proxy Host**
 2. Forward it to `<docker-host-ip>:5002`
 3. Enable SSL and issue a Let's Encrypt certificate
-4. Done — no changes to `docker-compose.yml` needed
+4. Under **Advanced**, add the following custom nginx config to enable WebSocket support (required for live updates):
+   ```nginx
+   proxy_set_header Upgrade $http_upgrade;
+   proxy_set_header Connection "upgrade";
+   ```
+5. Done — no changes to `docker-compose.yml` needed
+
+> **WebSockets are required for live updates.** Without the `Upgrade` headers, the SignalR connection will fall back to long-polling, which may not work through all reverse proxies.
 
 You can also expose only port `5002` and keep the API internal if you don't need direct API access from outside the host.
 
