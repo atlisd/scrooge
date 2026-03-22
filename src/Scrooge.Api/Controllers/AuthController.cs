@@ -96,6 +96,7 @@ public class AuthController : ControllerBase
         HttpOnly = true,
         Secure = Request.IsHttps,
         SameSite = SameSiteMode.Strict,
-        Path = "/api"
+        Path = "/api",
+        Expires = DateTimeOffset.UtcNow.AddDays(365)
     };
 }
