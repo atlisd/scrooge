@@ -16,6 +16,11 @@
 	);
 	let isYou = $derived($activeUser !== null && expense.paidById === $activeUser.id);
 	let paidByLabel = $derived($activeUser ? (isYou ? 'You' : expense.paidByName) : expense.paidByName);
+	let lentAmount = $derived(
+		expense.splitType === 'FullOther' ? expense.amount :
+		expense.splitType === 'Equal'     ? Math.round(expense.amount / 2) :
+		0
+	);
 </script>
 
 <div
@@ -33,20 +38,17 @@
 					<small class="text-muted">{secondaryText}</small>
 				{/if}
 				<div class="text-muted small">
-					{paidByLabel} paid &middot; {formatDate(expense.date)}
+					{paidByLabel} paid {formatAmount(expense.amount)} &middot; {formatDate(expense.date)}
 				</div>
 			</div>
 			<div class="text-end">
-				{#if $activeUser}
+				{#if $activeUser && lentAmount > 0}
 					{#if isYou}
 						<small class="text-success">you lent</small>
 					{:else}
 						<small class="text-danger">you borrowed</small>
 					{/if}
-				{/if}
-				<div class="fw-semibold" class:text-success={isYou} class:text-danger={$activeUser && !isYou}>{formatAmount(expense.amount)}</div>
-				{#if expense.splitType === 'FullOther'}
-					<span class="badge bg-warning text-dark split-badge">100% other</span>
+					<div class="fw-semibold" class:text-success={isYou} class:text-danger={!isYou}>{formatAmount(lentAmount)}</div>
 				{/if}
 			</div>
 		</div>
