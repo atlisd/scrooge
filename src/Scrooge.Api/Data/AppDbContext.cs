@@ -42,6 +42,7 @@ public class AppDbContext : DbContext
             entity.Property(e => e.SplitType).HasDefaultValue(Shared.DTOs.SplitType.Equal);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("now()");
             entity.HasIndex(e => e.Date);
+            entity.HasIndex(e => e.PaidById);
             entity.HasOne(e => e.PaidBy).WithMany().HasForeignKey(e => e.PaidById);
         });
     }

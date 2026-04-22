@@ -18,34 +18,25 @@ public class BalanceService : IBalanceService
         var user1 = users[0];
         var user2 = users[1];
 
-        var expenses = await _db.Expenses.ToListAsync();
-
-        long user1TotalPaid = 0, user2TotalPaid = 0;
-        long user1Credit = 0, user2Credit = 0;
-
-        foreach (var expense in expenses)
-        {
-            if (expense.PaidById == user1.Id)
+        var summary = await _db.Expenses
+            .GroupBy(e => e.PaidById)
+            .Select(g => new
             {
-                user1TotalPaid += expense.Amount;
-                user1Credit += expense.SplitType switch
-                {
-                    SplitType.Equal => expense.Amount / 2,
-                    SplitType.FullOther => expense.Amount,
-                    _ => 0
-                };
-            }
-            else if (expense.PaidById == user2.Id)
-            {
-                user2TotalPaid += expense.Amount;
-                user2Credit += expense.SplitType switch
-                {
-                    SplitType.Equal => expense.Amount / 2,
-                    SplitType.FullOther => expense.Amount,
-                    _ => 0
-                };
-            }
-        }
+                PaidById = g.Key,
+                TotalPaid = g.Sum(e => e.Amount),
+                Credit = g.Sum(e =>
+                    e.SplitType == SplitType.Equal     ? e.Amount / 2 :
+                    e.SplitType == SplitType.FullOther ? e.Amount     : 0L)
+            })
+            .ToListAsync();
+
+        var u1 = summary.FirstOrDefault(s => s.PaidById == user1.Id);
+        var u2 = summary.FirstOrDefault(s => s.PaidById == user2.Id);
+
+        long user1TotalPaid = u1?.TotalPaid ?? 0;
+        long user1Credit    = u1?.Credit    ?? 0;
+        long user2TotalPaid = u2?.TotalPaid ?? 0;
+        long user2Credit    = u2?.Credit    ?? 0;
 
         var netBalance = user1Credit - user2Credit;
         int owesUserId, isOwedUserId;
