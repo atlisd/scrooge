@@ -98,7 +98,8 @@
 				date: isoDate
 			});
 
-			const defaultPaidById = model.paidById;
+			const activeUser = getActiveUser();
+			const defaultPaidById = activeUser?.id ?? users[0]?.id ?? model.paidById;
 			model = {
 				merchant: '',
 				description: '',
