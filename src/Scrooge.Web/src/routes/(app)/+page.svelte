@@ -17,6 +17,7 @@
 	let submitting = $state(false);
 	let error = $state<string | null>(null);
 	let successMessage = $state<string | null>(null);
+	let successPayer = $state<string | null>(null);
 	let successVisible = $state(false);
 	let successTimeout: ReturnType<typeof setTimeout> | null = null;
 	let formKey = $state(0);
@@ -88,6 +89,7 @@
 		try {
 			const minorAmount = toMinorUnits(parsedAmount);
 			const merchant = model.merchant;
+			const payerName = users.find((u) => u.id === model.paidById)?.name ?? null;
 
 			await createExpense({
 				merchant: merchant || null,
@@ -113,6 +115,7 @@
 
 			if (successTimeout) clearTimeout(successTimeout);
 			successMessage = merchant ? `${merchant} · ${formatAmount(minorAmount)} added` : `${formatAmount(minorAmount)} added`;
+			successPayer = payerName;
 			successVisible = true;
 			successTimeout = setTimeout(() => {
 				successVisible = false;
@@ -168,6 +171,9 @@
 {#if successMessage}
 	<div class="notify-overlay" class:notify-visible={successVisible}>
 		<div class="notify-card">
+			{#if successPayer}
+				<div class="notify-payer">{successPayer} Payed</div>
+			{/if}
 			<div class="notify-icon">✓</div>
 			<div class="notify-text">{successMessage}</div>
 		</div>
@@ -208,6 +214,12 @@
 
 	.notify-visible .notify-card {
 		transform: scale(1);
+	}
+
+	.notify-payer {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: #6b7280;
 	}
 
 	.notify-icon {
