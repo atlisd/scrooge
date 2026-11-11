@@ -57,7 +57,11 @@ Scrooge is a two-person expense-splitting app. The .NET API backend serves a Sve
 
 ### Authentication
 
-Cookie-based sessions (`session_token` cookie). Session tokens are stored in the `AppSessions` DB table (multiple sessions supported). Auth middleware in `Program.cs` checks all `/api/*` routes except `/api/auth/login` and `/api/setup`.
+Session tokens are stored in the `AppSessions` DB table (multiple sessions supported). Auth middleware in `Program.cs` checks all `/api/*` routes except `/api/auth/login` and `/api/setup`.
+
+- **Two ways to send the token** (`Middleware/SessionToken.cs`): the web uses the HttpOnly `session_token` cookie; native clients (iOS) send `Authorization: Bearer <token>`. Cookie wins if both are present.
+- **`POST /api/auth/login`** sets the cookie *and* returns `{ "token": "..." }` (`LoginResponse`) — native clients store it in the Keychain.
+- **Sliding expiry** (`Services/SessionService.cs`): a session is valid while used at least once every 180 days (`IdleTimeout`). `LastUsedAt` is updated at most once a day; when it is, the browser cookie is re-issued with a fresh 365-day expiry.
 
 - **Password policy:** minimum 12 chars, uppercase, lowercase, digit, special character
 - **Account lockout:** 10 failed login attempts → 5-minute lockout (returns 429)

@@ -22,6 +22,7 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IBalanceService, BalanceService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
 
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
@@ -80,13 +81,18 @@ app.Use(async (context, next) =>
                  || !path.StartsWith("/api", StringComparison.OrdinalIgnoreCase);
     if (!isPublic)
     {
-        var token = context.Request.Cookies["session_token"];
-        var db = context.RequestServices.GetRequiredService<AppDbContext>();
-        if (token is null || !await db.AppSessions.AnyAsync(s => s.Token == token))
+        var sessions = context.RequestServices.GetRequiredService<ISessionService>();
+        var cookieToken = SessionToken.FromCookie(context.Request);
+        var token = cookieToken ?? SessionToken.FromBearer(context.Request);
+        var result = await sessions.ValidateAsync(token);
+        if (result == SessionValidation.Invalid)
         {
             context.Response.StatusCode = 401;
             return;
         }
+        // Slide the browser cookie's expiry forward along with the server-side session.
+        if (result == SessionValidation.Renewed && cookieToken is not null)
+            SessionToken.SetCookie(context, cookieToken);
     }
     await next();
 });

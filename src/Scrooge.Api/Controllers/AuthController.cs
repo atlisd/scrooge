@@ -1,7 +1,8 @@
-using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Scrooge.Api.Data;
+using Scrooge.Api.Middleware;
+using Scrooge.Api.Services;
 using Scrooge.Shared.DTOs;
 
 namespace Scrooge.Api.Controllers;
@@ -11,8 +12,13 @@ namespace Scrooge.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly ISessionService _sessions;
 
-    public AuthController(AppDbContext db) => _db = db;
+    public AuthController(AppDbContext db, ISessionService sessions)
+    {
+        _db = db;
+        _sessions = sessions;
+    }
 
     internal static bool IsValidPassword(string p) =>
         p.Length >= 12 && p.Any(char.IsUpper) && p.Any(char.IsLower) &&
@@ -42,61 +48,21 @@ public class AuthController : ControllerBase
         creds.LockoutEnd = null;
         await _db.SaveChangesAsync();
 
-        var session = new Scrooge.Api.Models.AppSession { Token = GenerateToken() };
-        _db.AppSessions.Add(session);
-        await _db.SaveChangesAsync();
-
-        SetSessionCookie(session.Token);
-        return Ok();
+        var token = await _sessions.CreateAsync();
+        SessionToken.SetCookie(HttpContext, token);
+        return Ok(new LoginResponse(token));
     }
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-        var token = Request.Cookies["session_token"];
-        if (token is not null)
-        {
-            var session = await _db.AppSessions.FirstOrDefaultAsync(s => s.Token == token);
-            if (session is not null)
-            {
-                _db.AppSessions.Remove(session);
-                await _db.SaveChangesAsync();
-            }
-        }
-        DeleteSessionCookie();
+        await _sessions.DeleteAsync(SessionToken.Get(Request));
+        SessionToken.DeleteCookie(HttpContext);
         return Ok();
     }
 
     [HttpGet("status")]
-    public async Task<IActionResult> Status()
-    {
-        var token = Request.Cookies["session_token"];
-        if (token is null || !await _db.AppSessions.AnyAsync(s => s.Token == token))
-            return Unauthorized();
-        return Ok();
-    }
-
-    private static string GenerateToken()
-    {
-        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-    }
-
-    private void SetSessionCookie(string token)
-    {
-        Response.Cookies.Append("session_token", token, GetCookieOptions());
-    }
-
-    private void DeleteSessionCookie()
-    {
-        Response.Cookies.Delete("session_token", GetCookieOptions());
-    }
-
-    private CookieOptions GetCookieOptions() => new()
-    {
-        HttpOnly = true,
-        Secure = Request.IsHttps,
-        SameSite = SameSiteMode.Strict,
-        Path = "/api",
-        Expires = DateTimeOffset.UtcNow.AddDays(365)
-    };
+    public IActionResult Status() =>
+        // The auth middleware has already validated the session for every non-public /api route.
+        Ok();
 }

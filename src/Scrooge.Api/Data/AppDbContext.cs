@@ -25,6 +25,7 @@ public class AppDbContext : DbContext
             entity.Property(s => s.Token).HasMaxLength(100).IsRequired();
             entity.HasIndex(s => s.Token).IsUnique();
             entity.Property(s => s.CreatedAt).HasDefaultValueSql("now()");
+            entity.Property(s => s.LastUsedAt).HasDefaultValueSql("now()");
         });
 
         modelBuilder.Entity<User>(entity =>
